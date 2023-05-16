@@ -44,8 +44,9 @@ def crawler(search_key): # 크롤링 함수
                     soup = BeautifulSoup(req, 'html.parser')  # 가져온 정보를 beautifulsoup로 파싱
                     
                     # 제품명 클릭
-                    element = '#tbody > tr:nth-child({0}) > td:nth-child(6) > span.table_txt'.format(i) # i번째 항목의 제품명의 Path 지정
-                    search_btn = driver.find_element(By.CSS_SELECTOR, element) # 버튼 지정
+                    elements = '#tbody > tr:nth-child({0}) > td:nth-child(6) > span.table_txt'.format(i)
+                    elements_text = driver.find_element(By.CSS_SELECTOR, elements).text.strip() # 제품명 가져오기
+                    search_btn = driver.find_element(By.CSS_SELECTOR, elements) # 버튼 지정
                     search_btn.click() # 지정한 버튼 클릭
                     sleep(2)
 
@@ -62,15 +63,22 @@ def crawler(search_key): # 크롤링 함수
                         if str(soup.select(element)) != '[]':
                             # 가져온 항목을 리스트에 추가
                             product_tmp.append(str(soup.select(element)))
+                            
                             # 리스트에 저장된 항목의 불필요한 부분 제거
                             product_tmp = [i.strip('[<td>') for i in product_tmp]
                             product_tmp = [i.strip('</td>]') for i in product_tmp]
+                            
+                            #한번에 작성 예시
+                            #product_tmp.append(str(soup.select(element)).strip('[<td>').strip('</td>]'))
+
 
                         else: # 가져온 항목이 비어있으면 반복문 종료
                             break
                     
+                   
+                    
                     # 한 제품의 성분 및 원료를 전체 제품의 성분 및 원료 리스트에 추가
-                    product.append(product_tmp)
+                    product.extend([elements_text,product_tmp])
 
                     # 뒤로가기 (X버튼 클릭)
                     search_btn = driver.find_element(By.CSS_SELECTOR, r'#close') # 버튼 지정
